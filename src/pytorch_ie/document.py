@@ -1,7 +1,7 @@
 import dataclasses
 import typing
-from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, TypeVar, Union, overload
+from collections.abc import Mapping, MutableSequence, Iterable
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, TypeVar, Union, overload, SupportsIndex
 
 if TYPE_CHECKING:
     from pytorch_ie.annotations import Annotation
@@ -27,7 +27,7 @@ def annotation_field(target: Optional[str] = None):
 T = TypeVar("T", covariant=False, bound="Annotation")
 
 
-class BaseAnnotationList(Sequence[T]):
+class BaseAnnotationList(MutableSequence[T]):
     def __init__(self, document: "Document", target: "str"):
         self._document = document
         self._target = target
@@ -40,22 +40,44 @@ class BaseAnnotationList(Sequence[T]):
         return self._target == other._target and self._annotations == other._annotations
 
     @overload
-    def __getitem__(self, idx: int) -> T:
+    def __getitem__(self, idx: SupportsIndex) -> T:
         ...
-
+    
     @overload
-    def __getitem__(self, s: slice) -> List[T]:
+    def __getitem__(self, idx: slice) -> List[T]:
         ...
 
     def __getitem__(self, idx: Union[int, slice]) -> Union[T, List[T]]:
         return self._annotations[idx]
 
+    @overload
+    def __setitem__(self, idx: SupportsIndex, item: T) -> None:
+        ...
+    
+    @overload
+    def __setitem__(self, idx: slice, items: Iterable[T]) -> None:
+        ...
+
+    def __setitem__(self, idx: Union[int, slice], item: Union[T, Iterable[T]]) -> None:
+        self._annotations[idx] = item
+
+    def __delitem__(self, idx: Union[SupportsIndex, slice]) -> None:
+        del self._annotations[idx]
+
+    def insert(self, idx: SupportsIndex, item: T) -> None:
+        self._annotations.insert(idx, item)
+
     def __len__(self) -> int:
         return len(self._annotations)
 
-    def append(self, annotation: T) -> None:
-        annotation.set_target(getattr(self._document, self._target))
-        self._annotations.append(annotation)
+    def append(self, item: T) -> None:
+        item.set_target(getattr(self._document, self._target))
+        self._annotations.append(item)
+
+    def extend(self, items: Iterable[T]) -> None:
+        for item in items:
+            item.set_target(getattr(self._document, self._target))
+            self._annotations.append(item)
 
     def __repr__(self) -> str:
         return f"BaseAnnotationList({str(self._annotations)})"

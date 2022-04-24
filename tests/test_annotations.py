@@ -269,7 +269,32 @@ def test_multilabeled_binary_relation():
         )
 
 
-def test_annotation_list():
+def test_annotation_list_operations():
+    @dataclass
+    class TestDocument(TextDocument):
+        entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
+
+    document = TestDocument(text="Entity A works at B.")
+
+    entity1 = LabeledSpan(start=0, end=8, label="PER")
+    entity2 = LabeledSpan(start=18, end=19, label="ORG")
+
+    document.entities.extend([entity1, entity2])
+    assert len(document.entities) == 2
+    assert document.entities[0] == entity1
+    assert document.entities[1] == entity2
+    assert document.entities[:1] == [entity1]
+    assert document.entities[:2] == [entity1, entity2]
+
+    del document.entities[1]
+    assert len(document.entities) == 1
+    assert document.entities[0] == entity1
+
+    document.entities[0] = entity2
+    assert len(document.entities) == 1
+    assert document.entities[0] == entity2
+
+def test_annotation_list_in_document():
     @dataclass
     class TestDocument(TextDocument):
         entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
