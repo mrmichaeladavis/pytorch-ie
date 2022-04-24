@@ -1,7 +1,19 @@
 import dataclasses
 import typing
-from collections.abc import Mapping, MutableSequence, Iterable
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, TypeVar, Union, overload, SupportsIndex
+from collections.abc import Iterable, Mapping, MutableSequence
+from typing_extensions import SupportsIndex
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    List,
+    Optional,
+    Set,
+    TypeVar,
+    Union,
+    overload,
+)
+from typing_extensions import SupportsIndex
 
 if TYPE_CHECKING:
     from pytorch_ie.annotations import Annotation
@@ -42,29 +54,33 @@ class BaseAnnotationList(MutableSequence[T]):
     @overload
     def __getitem__(self, idx: SupportsIndex) -> T:
         ...
-    
+
     @overload
     def __getitem__(self, idx: slice) -> List[T]:
         ...
 
-    def __getitem__(self, idx: Union[int, slice]) -> Union[T, List[T]]:
+    def __getitem__(self, idx: Union[SupportsIndex, slice]) -> Union[T, List[T]]:
         return self._annotations[idx]
 
     @overload
     def __setitem__(self, idx: SupportsIndex, item: T) -> None:
         ...
-    
+
     @overload
     def __setitem__(self, idx: slice, items: Iterable[T]) -> None:
         ...
 
-    def __setitem__(self, idx: Union[int, slice], item: Union[T, Iterable[T]]) -> None:
-        self._annotations[idx] = item
+    def __setitem__(self, idx: Union[SupportsIndex, slice], item: Union[T, Iterable[T]]) -> None:
+        item.set_target(getattr(self._document, self._target))
+        self._annotations.__setitem__(idx, item)
 
     def __delitem__(self, idx: Union[SupportsIndex, slice]) -> None:
-        del self._annotations[idx]
+        item = self._annotations[idx]
+        item.set_target(None)
+        del item
 
     def insert(self, idx: SupportsIndex, item: T) -> None:
+        item.set_target(getattr(self._document, self._target))
         self._annotations.insert(idx, item)
 
     def __len__(self) -> int:

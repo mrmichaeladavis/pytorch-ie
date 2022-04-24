@@ -294,6 +294,7 @@ def test_annotation_list_operations():
     assert len(document.entities) == 1
     assert document.entities[0] == entity2
 
+
 def test_annotation_list_in_document():
     @dataclass
     class TestDocument(TextDocument):
