@@ -3,7 +3,9 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader
 
 import datasets
-from pytorch_ie.models.transformer_span_classification import TransformerSpanClassificationModel
+from pytorch_ie.models.transformer_span_classification import (
+    TransformerSpanClassificationModel,
+)
 from pytorch_ie.taskmodules.transformer_span_classification import (
     TransformerSpanClassificationTaskModule,
 )
@@ -69,7 +71,6 @@ def main():
     trainer = pl.Trainer(
         fast_dev_run=False,
         max_epochs=num_epochs,
-        gpus=0,
         enable_checkpointing=False,
         # callbacks=[checkpoint_callback],
         precision=32,

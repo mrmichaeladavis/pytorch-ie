@@ -1,10 +1,19 @@
-from typing import Any, Dict, MutableMapping, Optional, Tuple
+from typing import Any
+from typing import Dict
+from typing import MutableMapping
+from typing import Optional
+from typing import Tuple
 
 import torchmetrics
-from torch import Tensor, nn
-from transformers import AdamW, AutoConfig, AutoModel, get_linear_schedule_with_warmup
+from torch import Tensor
+from torch import nn
+from transformers import AdamW
+from transformers import AutoConfig
+from transformers import AutoModel
+from transformers import get_linear_schedule_with_warmup
 
 from pytorch_ie.core import PyTorchIEModel
+
 
 TransformerTextClassificationModelBatchEncoding = MutableMapping[str, Any]
 TransformerTextClassificationModelBatchOutput = Dict[str, Any]
@@ -68,7 +77,9 @@ class TransformerTextClassificationModel(PyTorchIEModel):
         self.f1 = nn.ModuleDict(
             {
                 f"stage_{stage}": torchmetrics.F1Score(
-                    num_classes=num_classes, ignore_index=ignore_index
+                    task="multiclass" if num_classes > 2 else "binary",
+                    num_classes=num_classes,
+                    ignore_index=ignore_index,
                 )
                 for stage in [TRAINING, VALIDATION, TEST]
             }
@@ -92,7 +103,13 @@ class TransformerTextClassificationModel(PyTorchIEModel):
 
         loss = self.loss_fct(logits, target)
 
-        self.log(f"{stage}/loss", loss, on_step=(stage == TRAINING), on_epoch=True, prog_bar=True)
+        self.log(
+            f"{stage}/loss",
+            loss,
+            on_step=(stage == TRAINING),
+            on_epoch=True,
+            prog_bar=True,
+        )
 
         f1 = self.f1[f"stage_{stage}"]
         f1(logits, target)

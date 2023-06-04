@@ -1,9 +1,16 @@
 import abc
-from typing import Any, Dict, Optional, Type, Union, overload
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Type
+from typing import Union
+from typing import overload
 
 import datasets as hf_datasets
 from pytorch_ie.core.document import Document
-from pytorch_ie.data.dataset import Dataset, IterableDataset, decorate_convert_to_dict_of_lists
+from pytorch_ie.data.dataset import Dataset
+from pytorch_ie.data.dataset import IterableDataset
+from pytorch_ie.data.dataset import decorate_convert_to_dict_of_lists
 
 
 def get_general_dataset_builder_parent_class(
@@ -15,7 +22,9 @@ def get_general_dataset_builder_parent_class(
         if cls != PieDatasetBuilder and isinstance(obj, cls)
     ]
     if len(general_dataset_builder_parent_classes) != 1:
-        raise TypeError("can not determine general dataset builder parent class of the object")
+        raise TypeError(
+            "can not determine general dataset builder parent class of the object"
+        )
     return general_dataset_builder_parent_classes[0]
 
 
@@ -62,8 +71,8 @@ class PieDatasetBuilder(hf_datasets.builder.DatasetBuilder):
             )
             # Ensure that self and self.base_builder are derived from the same subclass of
             # hf_datasets.builder.DatasetBuilder.
-            base_builder_general_parent_class = get_general_dataset_builder_parent_class(
-                self.base_builder
+            base_builder_general_parent_class = (
+                get_general_dataset_builder_parent_class(self.base_builder)
             )
             self_general_parent_class = get_general_dataset_builder_parent_class(self)
             if base_builder_general_parent_class != self_general_parent_class:
@@ -101,7 +110,9 @@ class PieDatasetBuilder(hf_datasets.builder.DatasetBuilder):
         ...
 
     @overload
-    def _convert_dataset_single(self, dataset: hf_datasets.IterableDataset) -> IterableDataset:
+    def _convert_dataset_single(
+        self, dataset: hf_datasets.IterableDataset
+    ) -> IterableDataset:
         ...
 
     def _convert_dataset_single(
@@ -116,7 +127,9 @@ class PieDatasetBuilder(hf_datasets.builder.DatasetBuilder):
         mapped_dataset = dataset.map(fn, fn_kwargs=fn_kwargs)
 
         if isinstance(mapped_dataset, hf_datasets.Dataset):
-            return Dataset.from_hf_dataset(dataset=mapped_dataset, document_type=document_type)
+            return Dataset.from_hf_dataset(
+                dataset=mapped_dataset, document_type=document_type
+            )
         elif isinstance(mapped_dataset, hf_datasets.IterableDataset):
             return IterableDataset.from_hf_dataset(
                 dataset=mapped_dataset, document_type=document_type
@@ -132,11 +145,15 @@ class PieDatasetBuilder(hf_datasets.builder.DatasetBuilder):
         ...
 
     @overload
-    def _convert_datasets(self, datasets: hf_datasets.IterableDataset) -> IterableDataset:
+    def _convert_datasets(
+        self, datasets: hf_datasets.IterableDataset
+    ) -> IterableDataset:
         ...
 
     @overload
-    def _convert_datasets(self, datasets: hf_datasets.DatasetDict) -> hf_datasets.DatasetDict:
+    def _convert_datasets(
+        self, datasets: hf_datasets.DatasetDict
+    ) -> hf_datasets.DatasetDict:
         ...
 
     @overload
@@ -153,7 +170,12 @@ class PieDatasetBuilder(hf_datasets.builder.DatasetBuilder):
             hf_datasets.DatasetDict,
             hf_datasets.IterableDatasetDict,
         ],
-    ) -> Union[Dataset, IterableDataset, hf_datasets.DatasetDict, hf_datasets.IterableDatasetDict]:
+    ) -> Union[
+        Dataset,
+        IterableDataset,
+        hf_datasets.DatasetDict,
+        hf_datasets.IterableDatasetDict,
+    ]:
         if isinstance(datasets, dict):
             return type(datasets)(
                 {k: self._convert_dataset_single(v) for k, v in datasets.items()}
@@ -165,12 +187,14 @@ class PieDatasetBuilder(hf_datasets.builder.DatasetBuilder):
         self,
         split: Optional[hf_datasets.Split] = None,
         run_post_process=True,
-        ignore_verifications=False,
+        verification_mode: Optional[Union[hf_datasets.VerificationMode, str]] = None,
+        ignore_verifications="deprecated",
         in_memory=False,
     ) -> Union[Dataset, hf_datasets.DatasetDict]:
         datasets = super().as_dataset(
             split=split,
             run_post_process=run_post_process,
+            verification_mode=verification_mode,
             ignore_verifications=ignore_verifications,
             in_memory=in_memory,
         )
@@ -191,7 +215,9 @@ class PieDatasetBuilder(hf_datasets.builder.DatasetBuilder):
         return converted_datasets
 
 
-class GeneratorBasedBuilder(PieDatasetBuilder, hf_datasets.builder.GeneratorBasedBuilder):
+class GeneratorBasedBuilder(
+    PieDatasetBuilder, hf_datasets.builder.GeneratorBasedBuilder
+):
     def _generate_examples(self, *args, **kwargs):
         return self.base_builder._generate_examples(*args, **kwargs)
 

@@ -1,18 +1,24 @@
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
 
 import torch
 import torchmetrics
-from torch import Tensor, nn
-from transformers import (
-    AdamW,
-    AutoConfig,
-    AutoModel,
-    BatchEncoding,
-    get_linear_schedule_with_warmup,
-)
+from torch import Tensor
+from torch import nn
+from transformers import AdamW
+from transformers import AutoConfig
+from transformers import AutoModel
+from transformers import BatchEncoding
+from transformers import get_linear_schedule_with_warmup
 
 from pytorch_ie.core import PyTorchIEModel
 from pytorch_ie.models.modules.mlp import MLP
+
 
 TransformerSpanClassificationModelBatchEncoding = BatchEncoding
 TransformerSpanClassificationModelBatchOutput = Dict[str, Any]
@@ -82,14 +88,19 @@ class TransformerSpanClassificationModel(PyTorchIEModel):
         self.f1 = nn.ModuleDict(
             {
                 f"stage_{stage}": torchmetrics.F1Score(
-                    num_classes=num_classes, ignore_index=ignore_index
+                    task="multiclass" if num_classes > 2 else "binary",
+                    num_classes=num_classes,
+                    ignore_index=ignore_index,
                 )
                 for stage in [TRAINING, VALIDATION, TEST]
             }
         )
 
     def _start_end_and_span_length_span_index(
-        self, batch_size: int, max_seq_length: int, seq_lengths: Optional[Iterable[int]] = None
+        self,
+        batch_size: int,
+        max_seq_length: int,
+        seq_lengths: Optional[Iterable[int]] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         if seq_lengths is None:
             seq_lengths = batch_size * [max_seq_length]
@@ -149,7 +160,9 @@ class TransformerSpanClassificationModel(PyTorchIEModel):
         output = self.model(**input_)
 
         batch_size, seq_length, hidden_dim = output.last_hidden_state.shape
-        hidden_state = output.last_hidden_state.view(batch_size * seq_length, hidden_dim)
+        hidden_state = output.last_hidden_state.view(
+            batch_size * seq_length, hidden_dim
+        )
 
         seq_lengths = None
         if "attention_mask" in input_:
@@ -167,7 +180,9 @@ class TransformerSpanClassificationModel(PyTorchIEModel):
 
         start_embedding = hidden_state[offsets + start_indices, :]
         end_embedding = hidden_state[offsets + end_indices, :]
-        span_length_embedding = self.span_length_embedding(span_length.to(hidden_state.device))
+        span_length_embedding = self.span_length_embedding(
+            span_length.to(hidden_state.device)
+        )
 
         combined_embedding = torch.cat(
             (start_embedding, end_embedding, span_length_embedding), dim=-1
@@ -206,7 +221,13 @@ class TransformerSpanClassificationModel(PyTorchIEModel):
 
         loss = self.loss_fct(logits, target)
 
-        self.log(f"{stage}/loss", loss, on_step=stage == TRAINING, on_epoch=True, prog_bar=True)
+        self.log(
+            f"{stage}/loss",
+            loss,
+            on_step=stage == TRAINING,
+            on_epoch=True,
+            prog_bar=True,
+        )
 
         f1 = self.f1[f"stage_{stage}"]
         f1(logits, target)

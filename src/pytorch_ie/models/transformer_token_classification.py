@@ -1,11 +1,18 @@
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Tuple
 
 import torch
 import torchmetrics
-from torch import Tensor, nn
-from transformers import AutoConfig, AutoModelForTokenClassification, BatchEncoding
+from torch import Tensor
+from torch import nn
+from transformers import AutoConfig
+from transformers import AutoModelForTokenClassification
+from transformers import BatchEncoding
 
 from pytorch_ie.core import PyTorchIEModel
+
 
 TransformerTokenClassificationModelBatchEncoding = BatchEncoding
 TransformerTokenClassificationModelBatchOutput = Dict[str, Any]
@@ -50,7 +57,9 @@ class TransformerTokenClassificationModel(PyTorchIEModel):
         self.f1 = nn.ModuleDict(
             {
                 f"stage_{stage}": torchmetrics.F1Score(
-                    num_classes=num_classes, ignore_index=ignore_index
+                    task="multiclass" if num_classes > 2 else "binary",
+                    num_classes=num_classes,
+                    ignore_index=ignore_index,
                 )
                 for stage in [TRAINING, VALIDATION, TEST]
             }
@@ -72,7 +81,13 @@ class TransformerTokenClassificationModel(PyTorchIEModel):
 
         loss = output.loss
         # show loss on each step only during training
-        self.log(f"{stage}/loss", loss, on_step=(stage == TRAINING), on_epoch=True, prog_bar=True)
+        self.log(
+            f"{stage}/loss",
+            loss,
+            on_step=(stage == TRAINING),
+            on_epoch=True,
+            prog_bar=True,
+        )
 
         target_flat = target.view(-1)
 
