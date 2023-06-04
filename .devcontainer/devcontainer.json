@@ -1,0 +1,50 @@
+{
+  "name": "devcontainer",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      // set devcontainer-cli arg for Dockerfile
+      "devcontainercli": "true",
+      "USERNAME": "${localEnv:USER}"
+    }
+  },
+  "remoteUser": "${localEnv:USER}",
+  "runArgs": ["-e NVIDIA_DISABLE_REQUIRE=true", "--gpus=all", "--ipc=host"],
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/usr/local/cuda/bin",
+    "LD_LIBRARY_PATH": "$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64",
+    "XLA_FLAGS": "--xla_gpu_cuda_data_dir=/usr/local/cuda"
+  },
+  "initializeCommand": "echo \"USERNAME=$USER\nUSER_UID=$(id -u $USER)\nGROUPNAME=$(id -gn $USER)\nGROUP_GID=$(id -g $USER)\" > .devcontainer/.env",
+  "updateContentCommand": "bash .devcontainer/install-dev-tools.sh",
+  "shutdownAction": "stopContainer",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-from-docker:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "postCreateCommand": ["nvidia-smi"],
+  "customizations": {
+    "vscode": {
+      // Configure tool-specific properties.
+      "extensions": [
+        "mutantdino.resourcemonitor",
+        "ms-python.python",
+        "ms-python.vscode-mypy",
+        "ms-python.black-formatter",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "editorconfig.editorconfig",
+        "github.copilot",
+        "eamodio.gitlens",
+        "ms-python.isort",
+        "yzhang.markdown-all-in-one",
+        "davidanson.vscode-markdownlint",
+        "timonwong.shellcheck",
+        "tabnine.tabnine-vscode",
+        "rangav.vscode-thunder-client",
+        "redhat.vscode-yaml",
+        "fnando.linter"
+      ]
+    }
+  }
+}
