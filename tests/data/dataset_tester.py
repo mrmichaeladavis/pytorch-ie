@@ -1,18 +1,14 @@
 import os
 import tempfile
-from typing import List
-from typing import Optional
+from typing import List, Optional
 from unittest import TestCase
 
 from datasets.builder import BuilderConfig
 from datasets.download.download_manager import DownloadMode
 from datasets.download.mock_download_manager import MockDownloadManager
-from datasets.load import dataset_module_factory
-from datasets.load import import_main_class
-from datasets.utils.file_utils import DownloadConfig
-from datasets.utils.file_utils import is_remote_url
+from datasets.load import dataset_module_factory, import_main_class
+from datasets.utils.file_utils import DownloadConfig, is_remote_url
 from datasets.utils.logging import get_logger
-
 
 logger = get_logger(__name__)
 
@@ -25,9 +21,7 @@ class DatasetTester:
     def load_builder_class(self, dataset_name, is_local=False):
         # Download/copy dataset script
         if is_local is True:
-            dataset_module = dataset_module_factory(
-                os.path.join("datasets", dataset_name)
-            )
+            dataset_module = dataset_module_factory(os.path.join("datasets", dataset_name))
         else:
             dataset_module = dataset_module_factory(
                 dataset_name, download_config=DownloadConfig(force_download=True)
@@ -36,9 +30,7 @@ class DatasetTester:
         builder_cls = import_main_class(dataset_module.module_path)
         return builder_cls
 
-    def load_all_configs(
-        self, dataset_name, is_local=False
-    ) -> List[Optional[BuilderConfig]]:
+    def load_all_configs(self, dataset_name, is_local=False) -> List[Optional[BuilderConfig]]:
         # get builder class
         builder_cls = self.load_builder_class(dataset_name, is_local=is_local)
         builder = builder_cls
@@ -53,9 +45,7 @@ class DatasetTester:
         for config in configs:
             with tempfile.TemporaryDirectory() as processed_temp_dir, tempfile.TemporaryDirectory() as raw_temp_dir:
                 # create config and dataset
-                dataset_builder_cls = self.load_builder_class(
-                    dataset_name, is_local=is_local
-                )
+                dataset_builder_cls = self.load_builder_class(dataset_name, is_local=is_local)
                 name = config.name if config is not None else None
                 dataset_builder = dataset_builder_cls(
                     config_name=name, cache_dir=processed_temp_dir
@@ -73,9 +63,7 @@ class DatasetTester:
 
                 def check_if_url_is_valid(url):
                     if is_remote_url(url) and "\\" in url:
-                        raise ValueError(
-                            f"Bad remote url '{url} since it contains a backslash"
-                        )
+                        raise ValueError(f"Bad remote url '{url} since it contains a backslash")
 
                 # create mock data loader manager that has a special download_and_extract() method to download dummy data instead of real data
                 mock_dl_manager = MockDownloadManager(
@@ -132,8 +120,6 @@ class DatasetTester:
                         task_features = {**task.input_schema, **task.label_schema}
                         for split in dataset:
                             casted_dataset = dataset[split].prepare_for_task(task)
-                            self.parent.assertDictEqual(
-                                task_features, casted_dataset.features
-                            )
+                            self.parent.assertDictEqual(task_features, casted_dataset.features)
                             del casted_dataset
                 del dataset

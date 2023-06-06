@@ -1,11 +1,9 @@
+import lightning.pytorch as pl
 import pytest
-import pytorch_lightning as pl
-from torch.utils.data import DataLoader
-from torch.utils.data import IterableDataset
+from torch.utils.data import DataLoader, IterableDataset
 
 from pytorch_ie.models import TransformerTokenClassificationModel
 from pytorch_ie.taskmodules import TransformerTokenClassificationTaskModule
-
 
 MODEL_NAME = "bert-base-cased"
 
@@ -31,9 +29,7 @@ def model(prepared_taskmodule):
 
 
 @pytest.mark.parametrize("as_iterator", [False, True])
-def test_transformer_token_classification(
-    model, prepared_taskmodule, documents, as_iterator
-):
+def test_transformer_token_classification(model, prepared_taskmodule, documents, as_iterator):
     pl.seed_everything(42)
 
     num_epochs = 1

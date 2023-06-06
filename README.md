@@ -433,8 +433,8 @@ for relation in document.relations.predictions:
 </summary>
 
 ```python
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+import lightning.pytorch as pl
+from lightning.pytorch.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader
 
 import datasets
@@ -505,7 +505,7 @@ model = TransformerSpanClassificationModel(
 )
 
 # Optionally, set up a model checkpoint callback. See here for further information:
-# https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.callbacks.ModelCheckpoint.html
+# https://pytorch-lightning.readthedocs.io/en/stable/api/lightning.pytorch.callbacks.ModelCheckpoint.html
 # checkpoint_callback = ModelCheckpoint(
 #     monitor="val/f1",
 #     dirpath=model_output_path,
@@ -517,7 +517,7 @@ model = TransformerSpanClassificationModel(
 # )
 
 # Create the pytorch-lightning trainer. See here for further information:
-# https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.trainer.trainer.Trainer.html
+# https://pytorch-lightning.readthedocs.io/en/latest/api/lightning.pytorch.trainer.trainer.Trainer.html
 trainer = pl.Trainer(
     fast_dev_run=False,
     max_epochs=num_epochs,

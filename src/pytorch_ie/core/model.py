@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from pytorch_lightning import LightningModule
+from lightning.pytorch import LightningModule
 
 from pytorch_ie.core.hf_hub_mixin import PyTorchIEModelHubMixin
 from pytorch_ie.core.registrable import Registrable

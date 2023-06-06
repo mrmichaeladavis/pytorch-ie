@@ -1,11 +1,9 @@
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+import lightning.pytorch as pl
+from lightning.pytorch.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader
 
 import datasets
-from pytorch_ie.models.transformer_span_classification import (
-    TransformerSpanClassificationModel,
-)
+from pytorch_ie.models.transformer_span_classification import TransformerSpanClassificationModel
 from pytorch_ie.taskmodules.transformer_span_classification import (
     TransformerSpanClassificationTaskModule,
 )

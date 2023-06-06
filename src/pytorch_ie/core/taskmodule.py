@@ -18,7 +18,7 @@ from typing import (
 )
 
 import torch.utils.data.dataset as torch_dataset
-from pytorch_lightning.core.mixins import HyperparametersMixin
+from lightning.pytorch.core.mixins import HyperparametersMixin
 from tqdm import tqdm
 
 from pytorch_ie.core.document import Annotation, Document
@@ -240,7 +240,8 @@ class TaskModule(
         encode_target: bool,
         show_progress: bool = False,
     ) -> Tuple[
-        Sequence[TaskEncoding[DocumentType, InputEncoding, TargetEncoding]], Sequence[DocumentType]
+        Sequence[TaskEncoding[DocumentType, InputEncoding, TargetEncoding]],
+        Sequence[DocumentType],
     ]:
         ## TODO: revisit the assumption that encode_target=True always implies that
         ## is_training=True
@@ -518,6 +519,7 @@ class TaskModule(
 
     @abstractmethod
     def collate(
-        self, task_encodings: Sequence[TaskEncoding[DocumentType, InputEncoding, TargetEncoding]]
+        self,
+        task_encodings: Sequence[TaskEncoding[DocumentType, InputEncoding, TargetEncoding]],
     ) -> TaskBatchEncoding:
         pass

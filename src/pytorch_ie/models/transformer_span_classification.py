@@ -1,24 +1,18 @@
-from typing import Any
-from typing import Dict
-from typing import Iterable
-from typing import List
-from typing import Optional
-from typing import Sequence
-from typing import Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import torch
 import torchmetrics
-from torch import Tensor
-from torch import nn
-from transformers import AdamW
-from transformers import AutoConfig
-from transformers import AutoModel
-from transformers import BatchEncoding
-from transformers import get_linear_schedule_with_warmup
+from torch import Tensor, nn
+from transformers import (
+    AdamW,
+    AutoConfig,
+    AutoModel,
+    BatchEncoding,
+    get_linear_schedule_with_warmup,
+)
 
 from pytorch_ie.core import PyTorchIEModel
 from pytorch_ie.models.modules.mlp import MLP
-
 
 TransformerSpanClassificationModelBatchEncoding = BatchEncoding
 TransformerSpanClassificationModelBatchOutput = Dict[str, Any]
@@ -160,9 +154,7 @@ class TransformerSpanClassificationModel(PyTorchIEModel):
         output = self.model(**input_)
 
         batch_size, seq_length, hidden_dim = output.last_hidden_state.shape
-        hidden_state = output.last_hidden_state.view(
-            batch_size * seq_length, hidden_dim
-        )
+        hidden_state = output.last_hidden_state.view(batch_size * seq_length, hidden_dim)
 
         seq_lengths = None
         if "attention_mask" in input_:
@@ -180,9 +172,7 @@ class TransformerSpanClassificationModel(PyTorchIEModel):
 
         start_embedding = hidden_state[offsets + start_indices, :]
         end_embedding = hidden_state[offsets + end_indices, :]
-        span_length_embedding = self.span_length_embedding(
-            span_length.to(hidden_state.device)
-        )
+        span_length_embedding = self.span_length_embedding(span_length.to(hidden_state.device))
 
         combined_embedding = torch.cat(
             (start_embedding, end_embedding, span_length_embedding), dim=-1
