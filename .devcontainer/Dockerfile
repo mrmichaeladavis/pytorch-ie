@@ -28,8 +28,8 @@ RUN \
     --mount=type=cache,target=/var/cache/apt \
     apt-get update && apt-get -y install software-properties-common && \
     add-apt-repository -y ppa:deadsnakes/ppa && apt-get update && \
-    apt-get -y upgrade && apt-get -y install python3.10 \
-    && apt-get -y install python3.10-venv git curl wget python3.10-dev \
+    apt-get -y upgrade && apt-get -y install python3.9 \
+    && apt-get -y install python3.9-venv git curl wget python3.9-dev \
     build-essential vim file git-annex ffmpeg sudo keychain unzip jq gh \
     pinentry-gtk2 ca-certificates tzdata bash-completion locales
 
@@ -55,7 +55,7 @@ USER $USERNAME
 
 ### Bootstrap
 
-RUN python3.10 -m venv $VIRTUAL_ENV
+RUN python3.9 -m venv $VIRTUAL_ENV
 # This is so we dont have to activate the venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
